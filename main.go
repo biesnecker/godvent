@@ -8,6 +8,7 @@ import (
 	"github.com/biesnecker/godvent/twentyfifteen"
 	"github.com/biesnecker/godvent/twentyseventeen"
 	"github.com/biesnecker/godvent/twentysixteen"
+	"github.com/biesnecker/godvent/twentytwenty"
 	"github.com/biesnecker/godvent/types"
 )
 
@@ -17,7 +18,8 @@ func getAllSolutions() map[string]types.Solution {
 	yearSolutions := []map[string]types.Solution{
 		twentyfifteen.GetSolutions(),
 		twentysixteen.GetSolutions(),
-		twentyseventeen.GetSolutions()}
+		twentyseventeen.GetSolutions(),
+		twentytwenty.GetSolutions()}
 
 	for idx := range yearSolutions {
 		for problemName, solution := range yearSolutions[idx] {
