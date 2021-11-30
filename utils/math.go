@@ -22,3 +22,11 @@ func IntAbs(x int) int {
 	}
 	return x
 }
+
+func IntPow(base, exp int) int {
+	b := base
+	for i := 1; i < exp; i++ {
+		b *= base
+	}
+	return b
+}
