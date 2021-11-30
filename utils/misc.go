@@ -2,7 +2,12 @@ package utils
 
 import (
 	"strconv"
+	"unicode"
 )
+
+func IsHexDigit(r rune) bool {
+	return unicode.Is(unicode.ASCII_Hex_Digit, r)
+}
 
 func ReadInt(s string) int {
 	if n, err := strconv.Atoi(s); err != nil {
