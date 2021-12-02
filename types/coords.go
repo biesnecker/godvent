@@ -26,19 +26,35 @@ func (c Coord) Equals(x, y int) bool {
 }
 
 func (c Coord) Up() Coord {
-	return Coord{X: c.X, Y: c.Y + 1}
+	return c.UpBy(1)
+}
+
+func (c Coord) UpBy(i int) Coord {
+	return Coord{X: c.X, Y: c.Y + i}
 }
 
 func (c Coord) Down() Coord {
-	return Coord{X: c.X, Y: c.Y - 1}
+	return c.DownBy(1)
+}
+
+func (c Coord) DownBy(i int) Coord {
+	return Coord{X: c.X, Y: c.Y - i}
 }
 
 func (c Coord) Right() Coord {
-	return Coord{X: c.X + 1, Y: c.Y}
+	return c.RightBy(1)
+}
+
+func (c Coord) RightBy(i int) Coord {
+	return Coord{X: c.X + i, Y: c.Y}
 }
 
 func (c Coord) Left() Coord {
-	return Coord{X: c.X - 1, Y: c.Y}
+	return c.LeftBy(1)
+}
+
+func (c Coord) LeftBy(i int) Coord {
+	return Coord{X: c.X - i, Y: c.Y}
 }
 
 func (c Coord) IsNegative() bool {
