@@ -127,7 +127,7 @@ func ReadDelimitedIntegerStrings(
 	}
 }
 
-func ReadOneIntegerPerLine(fp *bufio.Reader) ([]int, error) {
+func ReadOneIntegerPerLine(fp *bufio.Reader) []int {
 	var parsingError error = nil
 	var nums []int
 	ReadStringsUntilBreak(fp, true, func(s string) bool {
@@ -140,8 +140,7 @@ func ReadOneIntegerPerLine(fp *bufio.Reader) ([]int, error) {
 		}
 	})
 	if parsingError != nil {
-		return nil, parsingError
-	} else {
-		return nums, nil
+		log.Fatalln(parsingError)
 	}
+	return nums
 }

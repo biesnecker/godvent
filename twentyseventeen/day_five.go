@@ -2,17 +2,13 @@ package twentyseventeen
 
 import (
 	"bufio"
-	"log"
 	"strconv"
 
 	"github.com/biesnecker/godvent/utils"
 )
 
 func findSolutionDayFive(fp *bufio.Reader, partB bool) int {
-	prog, err := utils.ReadOneIntegerPerLine(fp)
-	if err != nil {
-		log.Fatalln(err)
-	}
+	prog := utils.ReadOneIntegerPerLine(fp)
 
 	idx := 0
 	steps := 0

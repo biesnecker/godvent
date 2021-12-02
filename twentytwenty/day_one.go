@@ -2,25 +2,15 @@ package twentytwenty
 
 import (
 	"bufio"
-	"log"
 	"strconv"
 
 	"github.com/biesnecker/godvent/utils"
 )
 
-func readInputDayOne(fp *bufio.Reader) []int {
-	var res []int
-	var err error
-	if res, err = utils.ReadOneIntegerPerLine(fp); err != nil {
-		log.Fatalln(err)
-	}
-	return res
-}
-
 const target int = 2020
 
 func DayOneA(fp *bufio.Reader) string {
-	nums := readInputDayOne(fp)
+	nums := utils.ReadOneIntegerPerLine(fp)
 
 	nmap := make(map[int]struct{})
 
@@ -36,7 +26,7 @@ func DayOneA(fp *bufio.Reader) string {
 }
 
 func DayOneB(fp *bufio.Reader) string {
-	nums := readInputDayOne(fp)
+	nums := utils.ReadOneIntegerPerLine(fp)
 
 	type stepTwoValue struct {
 		a, b int
