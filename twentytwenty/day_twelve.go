@@ -71,5 +71,32 @@ func DayTwelveA(fp *bufio.Reader) string {
 }
 
 func DayTwelveB(fp *bufio.Reader) string {
-	return ""
+	commands := readInputDayTwelve(fp)
+
+	start := types.Coord{}
+	pos := start
+	wpxOffset := 10
+	wpyOffset := 1
+	for _, command := range commands {
+		switch command.command {
+		case 'N':
+			wpyOffset += command.arg
+		case 'S':
+			wpyOffset -= command.arg
+		case 'E':
+			wpxOffset += command.arg
+		case 'W':
+			wpxOffset -= command.arg
+		case 'F':
+			pos = types.Coord{
+				X: pos.X + (wpxOffset * command.arg),
+				Y: pos.Y + (wpyOffset * command.arg)}
+		case 'R':
+			for i := 0; i < command.arg; i++ {
+				wpxOffset, wpyOffset = wpyOffset, wpxOffset
+				wpyOffset *= -1
+			}
+		}
+	}
+	return strconv.Itoa(utils.ManhattanDistance(start, pos))
 }
