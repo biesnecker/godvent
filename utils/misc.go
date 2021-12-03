@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"log"
 	"strconv"
 	"unicode"
 )
@@ -23,4 +24,13 @@ func ReadByte(s string) byte {
 
 func IntInBounds(x, min, max int) bool {
 	return x >= min && x <= max
+}
+
+func ParseBinaryString(s string) int {
+	var i int64
+	var e error
+	if i, e = strconv.ParseInt(s, 2, 64); e != nil {
+		log.Fatalln(e)
+	}
+	return int(i)
 }

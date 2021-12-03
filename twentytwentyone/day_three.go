@@ -7,91 +7,70 @@ import (
 	"github.com/biesnecker/godvent/utils"
 )
 
-func readInputDayThree(fp *bufio.Reader) {
-	utils.ReadStrings(fp, func(s string) {
+func highLowBinaryStrings(nums []string) (string, string) {
+	digits := make([]int, len(nums[0]))
 
-	})
+	for _, num := range nums {
+		for idx, bit := range num {
+			if bit == '1' {
+				digits[idx]++
+			} else {
+				digits[idx]--
+			}
+		}
+	}
+	var high []byte
+	var low []byte
+	for _, i := range digits {
+		if i >= 0 {
+			// Tie behavior is the same as 1 being the most common.
+			high = append(high, '1')
+			low = append(low, '0')
+		} else {
+			high = append(high, '0')
+			low = append(low, '1')
+		}
+	}
+
+	return string(high), string(low)
 }
 
 func DayThreeA(fp *bufio.Reader) string {
 	input := utils.ReadStringsAsSlice(fp)
 
-	ones := make([]int, 12)
-	zeros := make([]int, 12)
-
-	for _, s := range input {
-		for i, c := range s {
-			if c == '1' {
-				ones[i]++
-			} else {
-				zeros[i]++
-			}
-		}
-	}
-	var gammaB []byte
-	var epsilonB []byte
-	for i := 0; i < len(ones); i++ {
-		if ones[i] > zeros[i] {
-			gammaB = append(gammaB, '1')
-			epsilonB = append(epsilonB, '0')
-		} else {
-			gammaB = append(gammaB, '0')
-			epsilonB = append(epsilonB, '1')
-		}
-	}
-	gamma, _ := strconv.ParseInt(string(gammaB), 2, 64)
-	epsilon, _ := strconv.ParseInt(string(epsilonB), 2, 64)
-	return strconv.Itoa(int(gamma) * int(epsilon))
+	gammaString, epsilonString := highLowBinaryStrings(input)
+	gamma := utils.ParseBinaryString(gammaString)
+	epsilon := utils.ParseBinaryString(epsilonString)
+	return strconv.Itoa(gamma * epsilon)
 }
 
-func findCandidate(cs []string, most bool) string {
+func findCandidate(candidates []string, takeHigh bool) string {
 	i := 0
-	for len(cs) > 1 {
-		var zeros, ones int
-		for _, c := range cs {
-			if c[i] == '0' {
-				zeros++
-			} else {
-				ones++
-			}
-		}
-		var matchbit byte
-		if most {
-			if zeros > ones {
-				matchbit = '0'
-			} else {
-				matchbit = '1'
-			}
+	for len(candidates) > 1 {
+		high, low := highLowBinaryStrings(candidates)
+		var match string
+		if takeHigh {
+			match = high
 		} else {
-			if zeros > ones {
-				matchbit = '1'
-			} else {
-				matchbit = '0'
-			}
+			match = low
 		}
-		var matches []string
-		for _, c := range cs {
-			if c[i] == matchbit {
-				matches = append(matches, c)
-			}
-		}
-		cs = matches
+
+		candidates = utils.FilterStrings(candidates, func(s string) bool {
+			return s[i] == match[i]
+		})
 		i++
 	}
-	return cs[0]
+	return candidates[0]
 }
 
 func DayThreeB(fp *bufio.Reader) string {
-	oxygenCandidates := utils.ReadStringsAsSlice(fp)
+	input := utils.ReadStringsAsSlice(fp)
 
-	co2Candidates := make([]string, len(oxygenCandidates))
-	copy(co2Candidates, oxygenCandidates)
+	oxygen := findCandidate(input, true)
+	co2 := findCandidate(input, false)
 
-	oxygen := findCandidate(oxygenCandidates, true)
-	co2 := findCandidate(co2Candidates, false)
+	oi := utils.ParseBinaryString(oxygen)
+	ci := utils.ParseBinaryString(co2)
 
-	oi, _ := strconv.ParseInt(oxygen, 2, 64)
-	ci, _ := strconv.ParseInt(co2, 2, 64)
-
-	return strconv.Itoa(int(oi) * int(ci))
+	return strconv.Itoa(oi * ci)
 }
