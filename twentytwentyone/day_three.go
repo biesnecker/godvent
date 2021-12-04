@@ -55,9 +55,12 @@ func findCandidate(candidates []string, takeHigh bool) string {
 			match = low
 		}
 
-		candidates = utils.FilterStrings(candidates, func(s string) bool {
-			return s[i] == match[i]
-		})
+		candidates = utils.FilterStrings(
+			candidates,
+			func(s string) bool {
+				return s[i] == match[i]
+			})
+
 		i++
 	}
 	return candidates[0]

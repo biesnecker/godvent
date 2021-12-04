@@ -10,10 +10,10 @@ func FilterInts(nums []int, filterF func(int) bool) []int {
 	return res
 }
 
-func FilterStrings(strings []string, filterF func(string) bool) []string {
+func FilterStrings(strings []string, pred func(string) bool) []string {
 	var res []string
 	for _, s := range strings {
-		if filterF(s) {
+		if pred(s) {
 			res = append(res, s)
 		}
 	}
