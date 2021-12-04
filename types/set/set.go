@@ -14,8 +14,10 @@ func (s *Set) Len() int {
 	return len(s.elems)
 }
 
-func (s *Set) Insert(key interface{}) {
-	s.elems[key] = struct{}{}
+func (s *Set) Insert(keys ...interface{}) {
+	for _, key := range keys {
+		s.elems[key] = struct{}{}
+	}
 }
 
 func (s *Set) Contains(key interface{}) bool {
@@ -23,8 +25,10 @@ func (s *Set) Contains(key interface{}) bool {
 	return ok
 }
 
-func (s *Set) Delete(key interface{}) {
-	delete(s.elems, key)
+func (s *Set) Delete(keys ...interface{}) {
+	for _, key := range keys {
+		delete(s.elems, key)
+	}
 }
 
 func (s *Set) Empty() bool {
