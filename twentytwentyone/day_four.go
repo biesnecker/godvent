@@ -78,23 +78,19 @@ func readInputDayFour(fp *bufio.Reader) ([]int, []boardD4) {
 		var newboard boardD4
 		boardLines := lines[:5]
 		for i, line := range boardLines {
-			var a, b, c, d, e int
 			_, err := fmt.Sscanf(
 				line,
 				"%d %d %d %d %d",
-				&a, &b, &c, &d, &e,
+				&newboard.squares[i][0].value,
+				&newboard.squares[i][1].value,
+				&newboard.squares[i][2].value,
+				&newboard.squares[i][3].value,
+				&newboard.squares[i][4].value,
 			)
 
 			if err != nil {
 				log.Fatalln(err)
 			}
-
-			newboard.squares[i][0].value = a
-			newboard.squares[i][1].value = b
-			newboard.squares[i][2].value = c
-			newboard.squares[i][3].value = d
-			newboard.squares[i][4].value = e
-
 		}
 		boards = append(boards, newboard)
 		lines = lines[5:]
