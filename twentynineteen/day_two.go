@@ -15,7 +15,7 @@ func DayTwoA(fp *bufio.Reader) string {
 	ic.Set(2, 2)
 	ic.Run()
 
-	return strconv.Itoa(ic.Prog[0])
+	return strconv.Itoa(ic.Get(0))
 }
 
 func DayTwoB(fp *bufio.Reader) string {
