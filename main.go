@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/biesnecker/godvent/twentyfifteen"
+	"github.com/biesnecker/godvent/twentynineteen"
 	"github.com/biesnecker/godvent/twentyseventeen"
 	"github.com/biesnecker/godvent/twentysixteen"
 	"github.com/biesnecker/godvent/twentytwenty"
@@ -20,6 +21,7 @@ func getAllSolutions() map[string]types.Solution {
 		twentyfifteen.GetSolutions(),
 		twentysixteen.GetSolutions(),
 		twentyseventeen.GetSolutions(),
+		twentynineteen.GetSolutions(),
 		twentytwenty.GetSolutions(),
 		twentytwentyone.GetSolutions()}
 
