@@ -34,3 +34,19 @@ func (s *Set) Delete(keys ...interface{}) {
 func (s *Set) Empty() bool {
 	return s.Len() == 0
 }
+
+func (s *Set) ForEach(cb func(elem interface{})) {
+	for k := range s.elems {
+		cb(k)
+	}
+}
+
+func (s *Set) Intersection(other *Set) *Set {
+	new := New()
+	for k := range s.elems {
+		if other.Contains(k) {
+			new.Insert(k)
+		}
+	}
+	return new
+}
