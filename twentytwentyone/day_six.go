@@ -14,18 +14,8 @@ func getAnswerDaySix(fp *bufio.Reader, ndays int) int {
 		days[i]++
 	}
 	for day := 0; day < ndays; day++ {
-		var newDays [9]int
-		for d := range days {
-			if d == 0 {
-				newDays[6] += days[d]
-				newDays[8] += days[d]
-			} else {
-				newDays[d-1] += days[d]
-			}
-		}
-		for i := 0; i < 9; i++ {
-			days[i] = newDays[i]
-		}
+		d := day % 9
+		days[(day+7)%9] += days[d]
 	}
 	count := 0
 	for i := range days {
