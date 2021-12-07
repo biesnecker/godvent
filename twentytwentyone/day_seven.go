@@ -8,35 +8,33 @@ import (
 	"github.com/biesnecker/godvent/utils"
 )
 
-func DaySevenA(fp *bufio.Reader) string {
+func getAnswerDaySeven(fp *bufio.Reader, fuelCalc func(pos, v int) int) string {
 	input := utils.ReadDeliminatedInts(fp, ",")
-	max := utils.MaxIntSlice(input)
+	min, max := utils.MinMaxIntSlice(input)
 	minfuel := math.MaxInt
-	for pos := 0; pos < max; pos++ {
+	for pos := min; pos < max; pos++ {
 		fuel := 0
 		for _, v := range input {
-			fuel += utils.IntAbs(pos - v)
+			fuel += fuelCalc(pos, v)
 		}
 		if fuel < minfuel {
 			minfuel = fuel
+		} else {
+			break
 		}
 	}
 	return strconv.Itoa(minfuel)
 }
 
+func DaySevenA(fp *bufio.Reader) string {
+	return getAnswerDaySeven(fp, func(pos, v int) int {
+		return utils.IntAbs(pos - v)
+	})
+}
+
 func DaySevenB(fp *bufio.Reader) string {
-	input := utils.ReadDeliminatedInts(fp, ",")
-	max := utils.MaxIntSlice(input)
-	minfuel := math.MaxInt
-	for pos := 0; pos < max; pos++ {
-		fuel := 0
-		for _, v := range input {
-			diff := utils.IntAbs(pos - v)
-			fuel += (diff * (diff + 1)) / 2
-		}
-		if fuel < minfuel {
-			minfuel = fuel
-		}
-	}
-	return strconv.Itoa(minfuel)
+	return getAnswerDaySeven(fp, func(pos, v int) int {
+		dist := utils.IntAbs(pos - v)
+		return (dist * (dist + 1)) / 2
+	})
 }
