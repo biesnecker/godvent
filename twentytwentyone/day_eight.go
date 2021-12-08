@@ -164,7 +164,7 @@ func DayEightB(fp *bufio.Reader) string {
 					// missing is resolved.
 					if resolved[3] && segments[3]&liv == 0 {
 						numberReps[liv] = 0
-					} else if resolved[1] && segments[2]&liv == 0 {
+					} else if resolved[2] && segments[2]&liv == 0 {
 						numberReps[liv] = 6
 					} else if resolved[4] && segments[4]&liv == 0 {
 						numberReps[liv] = 9
