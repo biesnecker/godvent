@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"fmt"
 	"math/bits"
-	"sort"
 	"strconv"
 
 	"github.com/biesnecker/godvent/utils"
@@ -22,12 +21,6 @@ func maskFromStringRepr(rep string) uint8 {
 		mask |= (uint8(1) << b)
 	}
 	return mask
-}
-
-func sortStringByCharacter(rep string) string {
-	b := []byte(rep)
-	sort.Slice(b, func(i, j int) bool { return b[i] < b[j] })
-	return string(b)
 }
 
 func readInputDayEight(fp *bufio.Reader) []inputD8 {
@@ -48,7 +41,6 @@ func readInputDayEight(fp *bufio.Reader) []inputD8 {
 			i.right[idx] = maskFromStringRepr(v)
 		}
 		res = append(res, i)
-		fmt.Println(i)
 	})
 	return res
 }
@@ -59,13 +51,7 @@ func DayEightA(fp *bufio.Reader) string {
 	for i := range input {
 		for _, v := range input[i].right {
 			switch bits.OnesCount8(v) {
-			case 2:
-				count++
-			case 4:
-				count++
-			case 3:
-				count++
-			case 7:
+			case 2, 3, 4, 7:
 				count++
 			}
 		}
@@ -74,138 +60,17 @@ func DayEightA(fp *bufio.Reader) string {
 	return strconv.Itoa(count)
 }
 
-func maskFromStringRep(rep string) uint8 {
-	mask := uint8(0)
-	for _, r := range rep {
-		b := byte(r) - 'a'
-		mask |= (uint8(1) << b)
-	}
-	return mask
-}
-
-func wireFromSegmentValue(v uint8) byte {
-	return 'a' + byte(bits.TrailingZeros8(v))
-}
-
-func tryEliminateZero(segments map[int]uint8, mask uint8) bool {
-	// No matter what, segments 0, 1, 5, and 6 must be in this mask.
-	segments[0] &= mask
-	segments[1] &= mask
-	segments[5] &= mask
-	segments[6] &= mask
-	// Can only be zero if the third segment is resolved and the corresponding
-	// wire isn't in this mask.
-	return bits.OnesCount8(segments[3]) == 1 && segments[3]&mask == 0
-}
-
-func eliminateOne(segments map[int]uint8, mask uint8) {
-	segments[0] &= ^mask
-	segments[1] &= ^mask
-	segments[2] &= mask
-	segments[3] &= ^mask
-	segments[4] &= ^mask
-	segments[5] &= mask
-	segments[6] &= ^mask
-}
-
-func tryEliminateTwo(segments map[int]uint8, mask uint8) bool {
-	// No matter what, segments 0, 3, and 6 must be in this mask.
-	segments[0] &= mask
-	segments[3] &= mask
-	segments[6] &= mask
-	if bits.OnesCount8(segments[1]) == 1 &&
-		bits.OnesCount8(segments[5]) == 1 &&
-		(segments[1]|segments[5])&mask == 0 {
-		// This is definitely two.
-		return true
-	} else if bits.OnesCount8(segments[4]) == 1 && segments[4]|mask > 0 {
-		// if segment 4 is resolved then it has to be two because no other
-		// five segment number uses it.
-		segments[1] &= ^mask
-		segments[2] &= mask
-		segments[5] &= ^mask
-		return true
-	}
-
-	return false
-}
-
-func tryEliminateThree(segments map[int]uint8, mask uint8) bool {
-	// No matter what, segments 0, 3, and 6 must be in this mask.
-	segments[0] &= mask
-	segments[3] &= mask
-	segments[6] &= mask
-	if bits.OnesCount8(segments[1]) == 1 &&
-		bits.OnesCount8(segments[4]) == 1 &&
-		(segments[1]|segments[4])&mask == 0 {
-		// This is definitely three.
-		return true
-	}
-	return false
-}
-
-func eliminateFour(segments map[int]uint8, mask uint8) {
-	segments[0] &= ^mask
-	segments[1] &= mask
-	segments[2] &= mask
-	segments[3] &= mask
-	segments[4] &= ^mask
-	segments[5] &= mask
-	segments[6] &= ^mask
-}
-
-func tryEliminateFive(segments map[int]uint8, mask uint8) bool {
-	// No matter what, segments 0, 3, and 6 must be in this mask.
-	segments[0] &= mask
-	segments[3] &= mask
-	segments[6] &= mask
-	if bits.OnesCount8(segments[2]) == 1 &&
-		bits.OnesCount8(segments[4]) == 1 &&
-		(segments[2]|segments[4])&mask == 0 {
-		// This is definitely five.
-		return true
-	} else if bits.OnesCount8(segments[1]) == 1 && segments[1]|mask > 0 {
-		// if segment 1 is resolved then it has to be five because no other
-		// five segment number uses it.
-		segments[2] &= ^mask
-		segments[4] &= ^mask
-		segments[5] &= mask
-		return true
-	}
-	return false
-}
-
-func tryEliminateSix(segments map[int]uint8, mask uint8) bool {
-	// Can only be six if the second segment is resolved and the corresponding
-	// wire isn't in this mask.
-	return bits.OnesCount8(segments[2]) == 1 && segments[2]&mask == 0
-}
-
-func eliminateSeven(segments map[int]uint8, mask uint8) {
-	segments[0] &= mask
-	segments[1] &= ^mask
-	segments[2] &= mask
-	segments[3] &= ^mask
-	segments[4] &= ^mask
-	segments[5] &= mask
-	segments[6] &= ^mask
-}
-
-func tryEliminateNine(segments map[int]uint8, mask uint8) bool {
-	// Can only be nine if the fourth segment is resolved and the corresponding
-	// wire isn't in this mask.
-	return bits.OnesCount8(segments[4]) == 1 && segments[4]&mask == 0
-}
-
 func DayEightB(fp *bufio.Reader) string {
 	var total int
 	input := readInputDayEight(fp)
 
-	for lineno, in := range input {
+	for _, in := range input {
 
-		segments := make(map[int]uint8)
+		segments := make([]uint8, 7)
+		resolved := make([]bool, 7)
 		for i := 0; i < 7; i++ {
 			segments[i] = 0x7f
+			resolved[i] = false
 		}
 
 		numberReps := make(map[uint8]int)
@@ -213,71 +78,116 @@ func DayEightB(fp *bufio.Reader) string {
 			numberReps[in.left[i]] = -1
 		}
 
-		for {
-			complete := true
-			for _, v := range numberReps {
-				if v == -1 {
-					complete = false
-					break
-				}
-			}
-			if complete {
-				// We're done. Should be able to decode.
-				break
+		unresolved := make([]uint8, len(in.left))
+		for i := range in.left {
+			unresolved[i] = in.left[i]
+		}
+
+		for len(unresolved) > 0 {
+			stillUnresolved := make([]uint8, 0, len(unresolved))
+
+			// Update the resolved map.
+			for i := 0; i < 7; i++ {
+				resolved[i] = bits.OnesCount8(segments[i]) == 1
 			}
 
-			for _, liv := range in.left {
+			for _, liv := range unresolved {
 				switch bits.OnesCount8(liv) {
 				case 2:
-					eliminateOne(segments, liv)
-					fmt.Println(lineno, ": Eliminated 1 : ", segments, numberReps)
+					// Has to be 1
+					segments[0] &= ^liv
+					segments[1] &= ^liv
+					segments[2] &= liv
+					segments[3] &= ^liv
+					segments[4] &= ^liv
+					segments[5] &= liv
+					segments[6] &= ^liv
 					numberReps[liv] = 1
 				case 3:
-					eliminateSeven(segments, liv)
-					fmt.Println(lineno, ": Eliminated 7 : ", segments, numberReps)
+					// Has to be 7
+					segments[0] &= liv
+					segments[1] &= ^liv
+					segments[2] &= liv
+					segments[3] &= ^liv
+					segments[4] &= ^liv
+					segments[5] &= liv
+					segments[6] &= ^liv
 					numberReps[liv] = 7
 				case 4:
-					eliminateFour(segments, liv)
-					fmt.Println(lineno, ": Eliminated 4 : ", segments, numberReps)
+					// Has to be 4
+					segments[0] &= ^liv
+					segments[1] &= liv
+					segments[2] &= liv
+					segments[3] &= liv
+					segments[4] &= ^liv
+					segments[5] &= liv
+					segments[6] &= ^liv
 					numberReps[liv] = 4
 				case 5:
-					if tryEliminateTwo(segments, liv) {
-						fmt.Println(lineno, ": Eliminated 2 : ", segments, numberReps)
+					// Could be 2, 3, or 5.
+					// Narrow common fields
+					segments[0] &= liv
+					segments[3] &= liv
+					segments[6] &= liv
+
+					// Check for exact matches
+					if resolved[1] && resolved[5] && ((segments[1]|segments[5])&liv) == 0 {
 						numberReps[liv] = 2
-					} else if tryEliminateThree(segments, liv) {
-						fmt.Println(lineno, ": Eliminated 3 : ", segments, numberReps)
+					} else if resolved[1] && resolved[4] && ((segments[1]|segments[4])&liv) == 0 {
 						numberReps[liv] = 3
-					} else if tryEliminateFive(segments, liv) {
-						fmt.Println(lineno, ": Eliminated 5 : ", segments, numberReps)
+					} else if resolved[2] && resolved[4] && ((segments[2]|segments[4])&liv) == 0 {
 						numberReps[liv] = 5
+					} else if resolved[4] && segments[4]&liv != 0 {
+						// Only 2 uses segment 4
+						numberReps[liv] = 2
+						segments[1] &= ^liv
+						segments[2] &= liv
+						segments[5] &= ^liv
+					} else if resolved[1] && segments[1]&liv != 0 {
+						// Only 5 uses segment 1
+						numberReps[liv] = 5
+						segments[2] &= ^liv
+						segments[4] &= ^liv
+						segments[5] &= liv
+					} else {
+						stillUnresolved = append(stillUnresolved, liv)
 					}
 				case 6:
-					if tryEliminateZero(segments, liv) {
-						fmt.Println(lineno, ": Eliminated 0 : ", segments, numberReps)
+					// Could be 0, 6, or 9
+					// Narrow common fields
+					segments[0] &= liv
+					segments[1] &= liv
+					segments[5] &= liv
+					segments[6] &= liv
+
+					// We can only solve these if the segment that they're
+					// missing is resolved.
+					if resolved[3] && segments[3]&liv == 0 {
 						numberReps[liv] = 0
-					} else if tryEliminateSix(segments, liv) {
-						fmt.Println(lineno, ": Eliminated 6 : ", segments, numberReps)
+					} else if resolved[1] && segments[2]&liv == 0 {
 						numberReps[liv] = 6
-					} else if tryEliminateNine(segments, liv) {
-						fmt.Println(lineno, ": Eliminated 9 : ", segments, numberReps)
+					} else if resolved[4] && segments[4]&liv == 0 {
 						numberReps[liv] = 9
+					} else {
+						stillUnresolved = append(stillUnresolved, liv)
 					}
 				case 7:
-					fmt.Println(lineno, ": Eliminated 8 : ", segments, numberReps)
 					numberReps[liv] = 8
-
 				}
 
 			}
 
-			// Do the decode.
-			n := 0
-			for i := range in.right {
-				n *= 10
-				n += numberReps[in.right[i]]
-			}
-			total += n
+			unresolved = stillUnresolved
 		}
+
+		// Do the decode.
+		n := 0
+		for i := range in.right {
+			n *= 10
+			n += numberReps[in.right[i]]
+		}
+		total += n
+
 	}
 	return strconv.Itoa(total)
 }
