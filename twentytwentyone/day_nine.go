@@ -55,7 +55,8 @@ func DayNineB(fp *bufio.Reader) string {
 	for _, loc := range findLowPoints(input) {
 		q := queue.New()
 		q.Push(loc)
-		size := 0
+		claimed[loc] = true
+		size := 1
 
 		for !q.Empty() {
 			c := q.Pop().(types.Coord)
