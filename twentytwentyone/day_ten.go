@@ -8,8 +8,18 @@ import (
 	"github.com/biesnecker/godvent/utils"
 )
 
-func readInputDayTen(fp *bufio.Reader) {
+func bracketMatch(left, right byte) bool {
+	return (left == '(' && right == ')') ||
+		(left == '[' && right == ']') ||
+		(left == '{' && right == '}') ||
+		(left == '<' && right == '>')
+}
 
+var bracketScores map[byte]int = map[byte]int{
+	')': 3,
+	']': 57,
+	'}': 1197,
+	'>': 25137,
 }
 
 func DayTenA(fp *bufio.Reader) string {
@@ -28,46 +38,16 @@ func DayTenA(fp *bufio.Reader) string {
 				tos++
 			default:
 				tos--
-				switch stack[tos] {
-				case '(':
-					if s[i] != ')' {
-						counts[s[i]]++
-						break lineiter
-					}
-				case '[':
-					if s[i] != ']' {
-						counts[s[i]]++
-						break lineiter
-					}
-				case '<':
-					if s[i] != '>' {
-
-						counts[s[i]]++
-						break lineiter
-					}
-				case '{':
-					if s[i] != '}' {
-
-						counts[s[i]]++
-						break lineiter
-					}
+				if !bracketMatch(stack[tos], s[i]) {
+					counts[s[i]]++
+					break lineiter
 				}
-
 			}
 		}
 	})
 	total := 0
 	for k, v := range counts {
-		switch k {
-		case ')':
-			total += (3 * v)
-		case ']':
-			total += (57 * v)
-		case '}':
-			total += (1197 * v)
-		case '>':
-			total += (25137 * v)
-		}
+		total += bracketScores[k] * v
 	}
 	return strconv.Itoa(total)
 }
@@ -89,29 +69,10 @@ func DayTenB(fp *bufio.Reader) string {
 				tos++
 			default:
 				tos--
-				switch stack[tos] {
-				case '(':
-					if s[i] != ')' {
-						isValid = false
-						break lineiter
-					}
-				case '[':
-					if s[i] != ']' {
-						isValid = false
-						break lineiter
-					}
-				case '<':
-					if s[i] != '>' {
-						isValid = false
-						break lineiter
-					}
-				case '{':
-					if s[i] != '}' {
-						isValid = false
-						break lineiter
-					}
+				if !bracketMatch(stack[tos], s[i]) {
+					isValid = false
+					break lineiter
 				}
-
 			}
 		}
 		if isValid && tos > 0 {
@@ -133,7 +94,7 @@ func DayTenB(fp *bufio.Reader) string {
 		}
 	})
 
-	sort.Sort(sort.IntSlice(scores))
+	sort.Ints(scores)
 
 	return strconv.Itoa(scores[len(scores)/2])
 }
