@@ -1,9 +1,7 @@
 package intcode
 
 import (
-	"bufio"
-
-	"github.com/biesnecker/godvent/utils"
+	"log"
 )
 
 type AddressMode = int
@@ -11,6 +9,7 @@ type AddressMode = int
 const (
 	PositionMode  AddressMode = 0
 	ImmediateMode AddressMode = 1
+	RelativeMode  AddressMode = 2
 )
 
 type DecodedInstruction struct {
@@ -30,59 +29,73 @@ func decodeInstruction(i int) DecodedInstruction {
 	return d
 }
 
-type Intcode struct {
-	Prog []int
+type intcode struct {
+	mem    map[int]int
+	base   int
+	input  <-chan int
+	output chan<- int
 }
 
-func IntcodeInterpreterFromFile(fp *bufio.Reader) Intcode {
-	return Intcode{Prog: utils.ReadDeliminatedInts(fp, ",")}
+func (interp *intcode) getIndirect(idx, offset int) int {
+	i := interp.mem[idx+offset]
+	return interp.mem[i]
 }
 
-func (interp *Intcode) Set(idx, value int) {
-	interp.Prog[idx] = value
-}
-
-func (interp *Intcode) Get(idx int) int {
-	return interp.Prog[idx]
-}
-
-func (interp *Intcode) getIndirect(idx int) int {
-	i := interp.Prog[idx]
-	return interp.Prog[i]
-}
-
-func (interp *Intcode) getWithMode(idx int, mode AddressMode) int {
-	if mode == ImmediateMode {
-		return interp.Prog[idx]
-	} else {
-		return interp.getIndirect(idx)
+func (interp *intcode) getWithMode(idx int, mode AddressMode) int {
+	switch mode {
+	case PositionMode:
+		return interp.getIndirect(idx, 0)
+	case ImmediateMode:
+		return interp.mem[idx]
+	case RelativeMode:
+		return interp.getIndirect(idx, interp.base)
+	default:
+		log.Fatalln("Unknown get mode: ", mode)
 	}
+	return 0
 }
 
-func (interp *Intcode) getDest(idx int) *int {
-	i := interp.Prog[idx]
-	return &interp.Prog[i]
+func (interp *intcode) setWithMode(idx, value int, mode AddressMode) {
+	var i int
+	switch mode {
+	case PositionMode:
+		i = idx
+	case RelativeMode:
+		i = idx + interp.base
+	default:
+		log.Fatalln("Unknown set mode: ", mode)
+	}
+	interp.mem[i] = value
 }
 
-func (interp *Intcode) Run(inC <-chan int, outC chan<- int) {
+func Run(prog []int, inC <-chan int, outC chan<- int) map[int]int {
+	mem := make(map[int]int)
+	for i, instr := range prog {
+		mem[i] = instr
+	}
+	interp := intcode{
+		mem:    mem,
+		base:   0,
+		input:  inC,
+		output: outC,
+	}
 	pc := 0
 dispatch:
 	for {
-		i := decodeInstruction(interp.Prog[pc])
+		i := decodeInstruction(interp.mem[pc])
 		switch i.op {
 		case 1:
 			opA := interp.getWithMode(pc+1, i.modes[0])
 			opB := interp.getWithMode(pc+2, i.modes[1])
-			*interp.getDest(pc + 3) = opA + opB
+			interp.setWithMode(pc+3, opA+opB, i.modes[2])
 			pc += 4
 		case 2:
 			opA := interp.getWithMode(pc+1, i.modes[0])
 			opB := interp.getWithMode(pc+2, i.modes[1])
-			*interp.getDest(pc + 3) = opA * opB
+			interp.setWithMode(pc+3, opA*opB, i.modes[2])
 			pc += 4
 		case 3:
-			input := <-inC
-			*interp.getDest(pc + 1) = input
+			interp.setWithMode(pc+1, <-inC, i.modes[0])
 			pc += 2
 		case 4:
 			outC <- interp.getWithMode(pc+1, i.modes[0])
@@ -106,26 +119,32 @@ dispatch:
 		case 7:
 			opA := interp.getWithMode(pc+1, i.modes[0])
 			opB := interp.getWithMode(pc+2, i.modes[1])
-			d := interp.getDest(pc + 3)
 			if opA < opB {
-				*d = 1
+				interp.setWithMode(pc+3, 1, i.modes[2])
 			} else {
-				*d = 0
+				interp.setWithMode(pc+3, 0, i.modes[2])
 			}
 			pc += 4
 		case 8:
 			opA := interp.getWithMode(pc+1, i.modes[0])
 			opB := interp.getWithMode(pc+2, i.modes[1])
-			d := interp.getDest(pc + 3)
 			if opA == opB {
-				*d = 1
+				interp.setWithMode(pc+3, 1, i.modes[2])
 			} else {
-				*d = 0
+				interp.setWithMode(pc+3, 0, i.modes[2])
 			}
 			pc += 4
+		case 9:
+			opA := interp.getWithMode(pc+1, i.modes[0])
+			interp.base += opA
+			pc += 2
 		case 99:
 			break dispatch
 		}
 	}
-	close(outC)
+	if outC != nil {
+		close(outC)
+	}
+
+	return interp.mem
 }
