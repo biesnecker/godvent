@@ -15,13 +15,11 @@ type octopus struct {
 	flashed bool
 }
 
-func readInputDayEleven(fp *bufio.Reader) map[types.Coord]*octopus {
-	res := make(map[types.Coord]*octopus)
+func readInputDayEleven(fp *bufio.Reader) map[types.Coord]int {
+	res := make(map[types.Coord]int)
 	utils.ReadStringsWithIndex(fp, func(i int, s string) {
 		for j := range s {
-			e := int(s[j] - '0')
-			loc := types.Coord{X: i, Y: j}
-			res[loc] = &octopus{energy: e, loc: loc}
+			res[types.Coord{X: i, Y: j}] = int(s[j] - '0')
 		}
 	})
 	return res
@@ -32,37 +30,33 @@ func DayElevenA(fp *bufio.Reader) string {
 	flashes := 0
 	for step := 0; step < 100; step++ {
 		q := queue.New()
-		for _, o := range input {
-			o.energy++
-			if o.energy > 9 {
-				q.Push(o)
+		for loc, o := range input {
+			input[loc]++
+			if o == 9 {
+				q.Push(loc)
 			}
 		}
 		for !q.Empty() {
-			o := q.Pop().(*octopus)
-			if o.flashed {
+			loc := q.Pop().(types.Coord)
+			e := input[loc]
+			if e == 0 {
 				continue
 			}
-			for _, otherloc := range o.loc.GetSurroundingCoords() {
+			for _, otherloc := range loc.GetSurroundingCoords() {
 				if other, ok := input[otherloc]; ok {
-					if other.flashed {
+					if other == 0 {
 						continue
 					}
-					other.energy++
-					if other.energy > 9 {
-						q.Push(other)
+					input[otherloc]++
+					if other == 9 {
+						q.Push(otherloc)
 					}
 				}
 			}
-			o.flashed = true
-			o.energy = 0
+			input[loc] = 0
 			flashes++
 		}
 
-		// Clear the flashed state
-		for _, o := range input {
-			o.flashed = false
-		}
 	}
 	return strconv.Itoa(flashes)
 }
@@ -75,37 +69,33 @@ func DayElevenB(fp *bufio.Reader) string {
 		step++
 		flashes = 0
 		q := queue.New()
-		for _, o := range input {
-			o.energy++
-			if o.energy > 9 {
-				q.Push(o)
+		for loc, o := range input {
+			if o == 9 {
+				q.Push(loc)
 			}
+			input[loc]++
 		}
 		for !q.Empty() {
-			o := q.Pop().(*octopus)
-			if o.flashed {
+			loc := q.Pop().(types.Coord)
+			e := input[loc]
+			if e == 0 {
 				continue
 			}
-			for _, otherloc := range o.loc.GetSurroundingCoords() {
+			for _, otherloc := range loc.GetSurroundingCoords() {
 				if other, ok := input[otherloc]; ok {
-					if other.flashed {
+					if other == 0 {
 						continue
 					}
-					other.energy++
-					if other.energy > 9 {
-						q.Push(other)
+					if other == 9 {
+						q.Push(otherloc)
 					}
+					input[otherloc]++
 				}
 			}
-			o.flashed = true
-			o.energy = 0
+			input[loc] = 0
 			flashes++
 		}
 
-		// Clear the flashed state
-		for _, o := range input {
-			o.flashed = false
-		}
 		if flashes == len(input) {
 			break
 		}
