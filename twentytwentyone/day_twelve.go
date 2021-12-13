@@ -80,16 +80,17 @@ func getPathD12(n *nodeD12, seen uint16, partTwo, doneTwice bool, count *int) {
 
 }
 
-func DayTwelveA(fp *bufio.Reader) string {
+func getAnswerD12(fp *bufio.Reader, partTwo bool) string {
 	input := readInputDayTwelve(fp)
 	count := 0
-	getPathD12(input["start"], 1, false, false, &count)
+	getPathD12(input["start"], 1, partTwo, false, &count)
 	return strconv.Itoa(count)
 }
 
+func DayTwelveA(fp *bufio.Reader) string {
+	return getAnswerD12(fp, false)
+}
+
 func DayTwelveB(fp *bufio.Reader) string {
-	input := readInputDayTwelve(fp)
-	count := 0
-	getPathD12(input["start"], 1, true, false, &count)
-	return strconv.Itoa(count)
+	return getAnswerD12(fp, true)
 }
