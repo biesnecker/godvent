@@ -10,17 +10,17 @@ import (
 	"github.com/biesnecker/godvent/utils"
 )
 
-type node struct {
+type nodeD12 struct {
 	label    string
-	next     []*node
+	next     []*nodeD12
 	smallIdx int
 }
 
-func readInputDayTwelve(fp *bufio.Reader) map[string]*node {
-	res := make(map[string]*node)
+func readInputDayTwelve(fp *bufio.Reader) map[string]*nodeD12 {
+	res := make(map[string]*nodeD12)
 	smallIdx := 1
 
-	getNode := func(label string) *node {
+	getNode := func(label string) *nodeD12 {
 		if n, ok := res[label]; ok {
 			return n
 		} else {
@@ -33,7 +33,7 @@ func readInputDayTwelve(fp *bufio.Reader) map[string]*node {
 					smallIdx++
 				}
 			}
-			n := node{label: label, smallIdx: sidx}
+			n := nodeD12{label: label, smallIdx: sidx}
 			res[label] = &n
 			return &n
 		}
@@ -53,7 +53,7 @@ func readInputDayTwelve(fp *bufio.Reader) map[string]*node {
 	return res
 }
 
-func getPath(n *node, seen uint16, partTwo, doneTwice bool, count *int) {
+func getPathD12(n *nodeD12, seen uint16, partTwo, doneTwice bool, count *int) {
 	for _, nn := range n.next {
 		if nn.label == "end" {
 			*count++
@@ -75,7 +75,7 @@ func getPath(n *node, seen uint16, partTwo, doneTwice bool, count *int) {
 		if nn.smallIdx >= 0 {
 			newseen |= uint16(1) << uint16(nn.smallIdx)
 		}
-		getPath(nn, newseen, partTwo, newDoneTwice, count)
+		getPathD12(nn, newseen, partTwo, newDoneTwice, count)
 	}
 
 }
@@ -83,13 +83,13 @@ func getPath(n *node, seen uint16, partTwo, doneTwice bool, count *int) {
 func DayTwelveA(fp *bufio.Reader) string {
 	input := readInputDayTwelve(fp)
 	count := 0
-	getPath(input["start"], 1, false, false, &count)
+	getPathD12(input["start"], 1, false, false, &count)
 	return strconv.Itoa(count)
 }
 
 func DayTwelveB(fp *bufio.Reader) string {
 	input := readInputDayTwelve(fp)
 	count := 0
-	getPath(input["start"], 1, true, false, &count)
+	getPathD12(input["start"], 1, true, false, &count)
 	return strconv.Itoa(count)
 }
