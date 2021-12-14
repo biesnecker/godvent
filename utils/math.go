@@ -24,6 +24,9 @@ func IntAbs(x int) int {
 }
 
 func IntPow(base, exp int) int {
+	if exp == 0 {
+		return 1
+	}
 	b := base
 	for i := 1; i < exp; i++ {
 		b *= base
