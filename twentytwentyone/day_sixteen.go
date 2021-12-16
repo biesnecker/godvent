@@ -8,8 +8,8 @@ import (
 	"github.com/biesnecker/godvent/utils"
 )
 
-func numberFromBits(bits []bool) uint64 {
-	n := uint64(0)
+func numberFromBits(bits []bool) int {
+	n := 0
 	for _, b := range bits {
 		n <<= 1
 		if b {
@@ -19,8 +19,8 @@ func numberFromBits(bits []bool) uint64 {
 	return n
 }
 
-func decodeLiteral(bits []bool) (int, uint64) {
-	res := uint64(0)
+func decodeLiteral(bits []bool) (int, int) {
+	res := 0
 	consumed := 0
 	stop := false
 	for !stop {
@@ -81,14 +81,14 @@ func readInputD16(fp *bufio.Reader) []bool {
 }
 
 type packet struct {
-	version  uint64
-	typeId   uint64
-	value    uint64
+	version  int
+	typeId   int
+	value    int
 	children []*packet
 }
 
-func parseBinaryString(bits []bool, pad bool) (int, *packet) {
-	if len(bits) == 0 {
+func parseBinaryString(bits []bool) (int, *packet) {
+	if len(bits) < 6 {
 		return 0, nil
 	}
 	version := numberFromBits(bits[:3])
@@ -98,7 +98,7 @@ func parseBinaryString(bits []bool, pad bool) (int, *packet) {
 	consumed := 6
 	switch typeId {
 	case 4:
-		var lit uint64
+		var lit int
 		var nc int
 		nc, lit = decodeLiteral(bits)
 		consumed += nc
@@ -110,20 +110,20 @@ func parseBinaryString(bits []bool, pad bool) (int, *packet) {
 		switch optype {
 		case true:
 			consumed += 11
-			nsubs := int(numberFromBits(bits[:11]))
+			nsubs := numberFromBits(bits[:11])
 			bits = bits[11:]
 			for i := 0; i < nsubs; i++ {
-				nc, child := parseBinaryString(bits, false)
+				nc, child := parseBinaryString(bits)
 				p.children = append(p.children, child)
 				consumed += nc
 				bits = bits[nc:]
 			}
 		case false:
 			consumed += 15
-			sublen := int(numberFromBits(bits[:15]))
+			sublen := numberFromBits(bits[:15])
 			bits = bits[15:]
 			for sublen > 0 {
-				nc, child := parseBinaryString(bits, false)
+				nc, child := parseBinaryString(bits)
 				p.children = append(p.children, child)
 				consumed += nc
 				sublen -= nc
@@ -136,13 +136,13 @@ func parseBinaryString(bits []bool, pad bool) (int, *packet) {
 				p.value += c.value
 			}
 		case 1:
-			product := uint64(1)
+			product := 1
 			for _, c := range p.children {
 				product *= c.value
 			}
 			p.value = product
 		case 2:
-			min := uint64(math.MaxUint64)
+			min := math.MaxInt
 			for _, c := range p.children {
 				if c.value < min {
 					min = c.value
@@ -150,7 +150,7 @@ func parseBinaryString(bits []bool, pad bool) (int, *packet) {
 			}
 			p.value = min
 		case 3:
-			max := uint64(0)
+			max := 0
 			for _, c := range p.children {
 				if c.value > max {
 					max = c.value
@@ -177,13 +177,10 @@ func parseBinaryString(bits []bool, pad bool) (int, *packet) {
 			}
 		}
 	}
-	if pad && consumed%4 != 0 {
-		consumed += (4 - (consumed % 4))
-	}
 	return consumed, p
 }
 
-func sumPacketVersion(p *packet) uint64 {
+func sumPacketVersion(p *packet) int {
 	total := p.version
 	for _, c := range p.children {
 		total += sumPacketVersion(c)
@@ -193,12 +190,12 @@ func sumPacketVersion(p *packet) uint64 {
 
 func DaySixteenA(fp *bufio.Reader) string {
 	input := readInputD16(fp)
-	_, p := parseBinaryString(input, false)
-	return strconv.Itoa(int(sumPacketVersion(p)))
+	_, p := parseBinaryString(input)
+	return strconv.Itoa(sumPacketVersion(p))
 }
 
 func DaySixteenB(fp *bufio.Reader) string {
 	input := readInputD16(fp)
-	_, p := parseBinaryString(input, false)
-	return strconv.Itoa(int(p.value))
+	_, p := parseBinaryString(input)
+	return strconv.Itoa(p.value)
 }
