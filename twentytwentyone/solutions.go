@@ -32,5 +32,7 @@ func GetSolutions() map[string]types.Solution {
 		"year_2021_day_thirteen_b": {Input: "input/2021/day_thirteen.txt", Solution: DayThirteenB},
 		"year_2021_day_fourteen_a": {Input: "input/2021/day_fourteen.txt", Solution: DayFourteenA},
 		"year_2021_day_fourteen_b": {Input: "input/2021/day_fourteen.txt", Solution: DayFourteenB},
+		"year_2021_day_fifteen_a":  {Input: "input/2021/day_fifteen.txt", Solution: DayFifteenA},
+		"year_2021_day_fifteen_b":  {Input: "input/2021/day_fifteen.txt", Solution: DayFifteenB},
 	}
 }
