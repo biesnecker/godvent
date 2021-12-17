@@ -10,13 +10,12 @@ import (
 	"github.com/biesnecker/godvent/utils"
 )
 
-func inBounds(c types.Coord, b bounds) bool {
+func inBounds(c types.Coord, b boundsD17) bool {
 	return c.IsInBounds(b.minx, b.miny, b.maxx, b.maxy)
 }
 
-func runSimulation(xvel int, yvel int, b bounds) (bool, int) {
-	//fmt.Println("vel ", xvel, yvel)
-	loc := types.Coord{0, 0}
+func runSimulation(xvel int, yvel int, b boundsD17) (bool, int) {
+	loc := types.Coord{X: 0, Y: 0}
 	maxy := math.MinInt
 	for {
 		loc = loc.UpBy(yvel)
@@ -32,7 +31,7 @@ func runSimulation(xvel int, yvel int, b bounds) (bool, int) {
 		yvel--
 		if inBounds(loc, b) {
 			return true, maxy
-		} else if (loc.X > b.maxx && xvel > 0) || (loc.X < b.minx && xvel < 0) {
+		} else if (loc.X > b.maxx && xvel >= 0) || (loc.X < b.minx && xvel <= 0) {
 			return false, 0
 		} else if loc.Y < b.miny && yvel < 0 {
 			return false, 0
@@ -40,18 +39,18 @@ func runSimulation(xvel int, yvel int, b bounds) (bool, int) {
 	}
 }
 
-type bounds struct {
+type boundsD17 struct {
 	minx, maxx int
 	miny, maxy int
 }
 
-func readInputDay17(fp *bufio.Reader) bounds {
+func readInputDay17(fp *bufio.Reader) boundsD17 {
 	var minx, maxx, miny, maxy int
 	s := utils.ReadSingleString(fp)
 	fmt.Sscanf(s,
 		"target area: x=%d..%d, y=%d..%d",
 		&minx, &maxx, &miny, &maxy)
-	return bounds{minx, maxx, miny, maxy}
+	return boundsD17{minx, maxx, miny, maxy}
 }
 
 func DaySeventeenA(fp *bufio.Reader) string {
