@@ -2,11 +2,11 @@ package twentytwentyone
 
 import (
 	"bufio"
+	"container/heap"
 	"math"
 	"strconv"
 
 	"github.com/biesnecker/godvent/types"
-	"github.com/biesnecker/godvent/types/queue"
 	"github.com/biesnecker/godvent/utils"
 )
 
@@ -28,25 +28,63 @@ func readInputDayFifteen(fp *bufio.Reader) (int, int, map[types.Coord]int) {
 
 }
 
+type stepD15 struct {
+	loc         types.Coord
+	risk, index int
+}
+
+type priorityQueueD15 struct {
+	target types.Coord
+	steps  []*stepD15
+}
+
+func (pq *priorityQueueD15) Len() int { return len(pq.steps) }
+
+func (pq *priorityQueueD15) Less(i, j int) bool {
+	if pq.steps[i].risk == pq.steps[j].risk {
+		return utils.ManhattanDistance(pq.target, pq.steps[i].loc) <
+			utils.ManhattanDistance(pq.target, pq.steps[j].loc)
+	} else {
+		return pq.steps[i].risk < pq.steps[j].risk
+	}
+}
+
+func (pq *priorityQueueD15) Swap(i, j int) {
+	pq.steps[i], pq.steps[j] = pq.steps[j], pq.steps[i]
+	pq.steps[i].index = i
+	pq.steps[j].index = j
+}
+
+func (pq *priorityQueueD15) Push(x interface{}) {
+	n := len(pq.steps)
+	item := x.(*stepD15)
+	item.index = n
+	pq.steps = append(pq.steps, item)
+}
+
+func (pq *priorityQueueD15) Pop() interface{} {
+	n := len(pq.steps)
+	item := pq.steps[n-1]
+	pq.steps[n-1] = nil // avoid memory leak
+	item.index = -1     // for safety
+	pq.steps = pq.steps[:n-1]
+	return item
+}
+
 func DayFifteenA(fp *bufio.Reader) string {
 	maxx, maxy, input := readInputDayFifteen(fp)
 
-	type step struct {
-		loc  types.Coord
-		risk int
-	}
-
 	target := types.Coord{X: maxx, Y: maxy}
 
-	q := queue.New()
-	q.Push(step{loc: types.Coord{X: 0, Y: 0}, risk: 0})
+	pq := &priorityQueueD15{target: target}
+	pq.Push(&stepD15{loc: types.Coord{X: 0, Y: 0}, risk: 0})
 
 	minrisk := math.MaxInt
 
 	risks := make(map[types.Coord]int)
 
-	for !q.Empty() {
-		s := q.Pop().(step)
+	for pq.Len() != 0 {
+		s := heap.Pop(pq).(*stepD15)
 
 		if s.loc == target {
 			if minrisk > s.risk {
@@ -66,7 +104,7 @@ func DayFifteenA(fp *bufio.Reader) string {
 					continue adjloop
 				}
 				risks[nextloc] = nextrisk
-				q.Push(step{loc: nextloc, risk: nextrisk})
+				heap.Push(pq, &stepD15{loc: nextloc, risk: nextrisk})
 			}
 		}
 
@@ -80,22 +118,17 @@ func DayFifteenB(fp *bufio.Reader) string {
 	maxxe := (maxx+1)*5 - 1
 	maxye := (maxy+1)*5 - 1
 
-	type step struct {
-		loc  types.Coord
-		risk int
-	}
-
 	target := types.Coord{X: maxxe, Y: maxye}
 
-	q := queue.New()
-	q.Push(step{loc: types.Coord{X: 0, Y: 0}, risk: 0})
+	pq := &priorityQueueD15{target: target}
+	pq.Push(&stepD15{loc: types.Coord{X: 0, Y: 0}, risk: 0})
 
 	minrisk := math.MaxInt
 
 	risks := make(map[types.Coord]int)
 
-	for !q.Empty() {
-		s := q.Pop().(step)
+	for pq.Len() > 0 {
+		s := heap.Pop(pq).(*stepD15)
 
 		if s.loc == target {
 			if minrisk > s.risk {
@@ -126,7 +159,7 @@ func DayFifteenB(fp *bufio.Reader) string {
 					continue adjloop
 				}
 				risks[actualnextloc] = nextrisk
-				q.Push(step{loc: actualnextloc, risk: nextrisk})
+				heap.Push(pq, &stepD15{loc: actualnextloc, risk: nextrisk})
 			}
 		}
 
